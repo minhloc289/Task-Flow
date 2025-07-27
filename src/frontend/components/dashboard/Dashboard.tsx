@@ -208,7 +208,7 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Task List</CardTitle>
+              <CardTitle className="text-xl font-semibold">Task List</CardTitle>
             </CardHeader>
             <CardContent>
               <TaskList

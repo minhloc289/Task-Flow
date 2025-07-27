@@ -1,10 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, Calendar, Clock, AlertCircle, CheckCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Edit, Trash2, Calendar, Clock, AlertCircle, CheckCircle, Check } from "lucide-react"
 import type { Task } from "../../types"
 
 interface TaskListProps {
@@ -15,55 +14,61 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, onEdit, onDelete, onStatusChange }: TaskListProps) {
-  const getPriorityColor = (priority: string) => {
+  const getPriorityConfig = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-700 border-red-200"
+        return {
+          color: "bg-red-50 text-red-700 border-red-200",
+          dotColor: "bg-red-500",
+        }
       case "medium":
-        return "bg-yellow-100 text-yellow-700 border-yellow-200"
+        return {
+          color: "bg-amber-50 text-amber-700 border-amber-200",
+          dotColor: "bg-amber-500",
+        }
       case "low":
-        return "bg-green-100 text-green-700 border-green-200"
+        return {
+          color: "bg-green-50 text-green-700 border-green-200",
+          dotColor: "bg-green-500",
+        }
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200"
+        return {
+          color: "bg-slate-50 text-slate-700 border-slate-200",
+          dotColor: "bg-slate-500",
+        }
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch (status) {
       case "todo":
-        return <Clock className="h-4 w-4" />
+        return {
+          icon: <Clock className="h-4 w-4" />,
+          text: "To Do",
+          color: "text-slate-600",
+          bgColor: "bg-slate-50",
+        }
       case "in-progress":
-        return <AlertCircle className="h-4 w-4" />
+        return {
+          icon: <AlertCircle className="h-4 w-4" />,
+          text: "In Progress",
+          color: "text-blue-600",
+          bgColor: "bg-blue-50",
+        }
       case "completed":
-        return <CheckCircle className="h-4 w-4" />
+        return {
+          icon: <CheckCircle className="h-4 w-4" />,
+          text: "Completed",
+          color: "text-green-600",
+          bgColor: "bg-green-50",
+        }
       default:
-        return <Clock className="h-4 w-4" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "bg-slate-100 text-slate-700"
-      case "in-progress":
-        return "bg-blue-100 text-blue-700"
-      case "completed":
-        return "bg-green-100 text-green-700"
-      default:
-        return "bg-slate-100 text-slate-700"
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "To Do"
-      case "in-progress":
-        return "In Progress"
-      case "completed":
-        return "Completed"
-      default:
-        return "To Do"
+        return {
+          icon: <Clock className="h-4 w-4" />,
+          text: "To Do",
+          color: "text-slate-600",
+          bgColor: "bg-slate-50",
+        }
     }
   }
 
@@ -87,112 +92,144 @@ export function TaskList({ tasks, onEdit, onDelete, onStatusChange }: TaskListPr
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "2-digit",
+      month: "short",
+      day: "numeric",
       year: "numeric",
     })
   }
 
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <CheckCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-slate-600 mb-2">No tasks found</h3>
-        <p className="text-slate-500">Add a new task to get started</p>
+      <div className="text-center py-16">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="h-10 w-10 text-slate-400" />
+        </div>
+        <h3 className="text-xl font-semibold text-slate-700 mb-2">No tasks found</h3>
+        <p className="text-slate-500 mb-6">Create your first task to get started</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
-      {tasks.map((task) => (
-        <Card
-          key={task.id}
-          className={`transition-all hover:shadow-md ${task.status === "completed" ? "opacity-75" : ""}`}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2 mb-2">
-                  <h3 className={`font-medium text-slate-800 ${task.status === "completed" ? "line-through" : ""}`}>
-                    {task.title}
-                  </h3>
-                  <Badge variant="outline" className={getPriorityColor(task.priority)}>
-                    {getPriorityText(task.priority)}
-                  </Badge>
+    <div className="space-y-4">
+      {tasks.map((task) => {
+        const priorityConfig = getPriorityConfig(task.priority)
+        const statusConfig = getStatusConfig(task.status)
+        const overdue = isOverdue(task.dueDate)
+
+        return (
+          <Card
+            key={task.id}
+            className={`group transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+              task.status === "completed" ? "bg-slate-50/50 opacity-75" : "bg-white"
+            }`}
+          >
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                {/* Main Content */}
+                <div className="flex-1 min-w-0">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <h3
+                        className={`text-lg font-semibold text-slate-800 truncate ${
+                          task.status === "completed" ? "line-through text-slate-500" : ""
+                        }`}
+                      >
+                        {task.title}
+                      </h3>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className={`w-2 h-2 rounded-full ${priorityConfig.dotColor}`} />
+                        <Badge variant="outline" className={`${priorityConfig.color} text-xs font-medium px-2 py-1`}>
+                          {getPriorityText(task.priority)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-slate-600 mb-4 leading-relaxed line-clamp-2">{task.description}</p>
+
+                  {/* Footer */}
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    {/* Status */}
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${statusConfig.bgColor}`}>
+                      <div className={statusConfig.color}>{statusConfig.icon}</div>
+                      <span className={`font-medium ${statusConfig.color}`}>{statusConfig.text}</span>
+                    </div>
+
+                    {/* Due Date */}
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-4 w-4 text-slate-400" />
+                      <span className={`font-medium ${overdue ? "text-red-600" : "text-slate-600"}`}>
+                        {formatDate(task.dueDate)}
+                      </span>
+                      {overdue && (
+                        <Badge variant="destructive" className="text-xs font-medium">
+                          Overdue
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Category */}
+                    <Badge variant="secondary" className="text-xs font-medium bg-slate-100 text-slate-700">
+                      {task.category}
+                    </Badge>
+                  </div>
                 </div>
 
-                <p className="text-sm text-slate-600 mb-3 line-clamp-2">{task.description}</p>
+                {/* Action Buttons */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+                  {/* Complete/Uncomplete Button */}
+                  {task.status !== "completed" ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onStatusChange(task.id, "completed")}
+                      className="h-9 w-9 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full"
+                      title="Mark as completed"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onStatusChange(task.id, "todo")}
+                      className="h-9 w-9 p-0 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-full"
+                      title="Mark as incomplete"
+                    >
+                      <Clock className="h-4 w-4" />
+                    </Button>
+                  )}
 
-                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                  <div className="flex items-center space-x-1">
-                    {getStatusIcon(task.status)}
-                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(task.status)}`}>
-                      {getStatusText(task.status)}
-                    </span>
-                  </div>
+                  {/* Edit Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(task)}
+                    className="h-9 w-9 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full"
+                    title="Edit task"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
 
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="h-4 w-4" />
-                    <span className={isOverdue(task.dueDate) ? "text-red-600 font-medium" : ""}>
-                      {formatDate(task.dueDate)}
-                    </span>
-                    {isOverdue(task.dueDate) && (
-                      <Badge variant="destructive" className="text-xs">
-                        Overdue
-                      </Badge>
-                    )}
-                  </div>
-
-                  <Badge variant="secondary" className="text-xs">
-                    {task.category}
-                  </Badge>
+                  {/* Delete Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDelete(task.id)}
+                    className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full"
+                    title="Delete task"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEdit(task)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-
-                  {task.status !== "completed" && (
-                    <DropdownMenuItem onClick={() => onStatusChange(task.id, "completed")}>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Mark as Completed
-                    </DropdownMenuItem>
-                  )}
-
-                  {task.status === "completed" && (
-                    <DropdownMenuItem onClick={() => onStatusChange(task.id, "todo")}>
-                      <Clock className="h-4 w-4 mr-2" />
-                      Mark as To Do
-                    </DropdownMenuItem>
-                  )}
-
-                  {task.status === "todo" && (
-                    <DropdownMenuItem onClick={() => onStatusChange(task.id, "in-progress")}>
-                      <AlertCircle className="h-4 w-4 mr-2" />
-                      Start Working
-                    </DropdownMenuItem>
-                  )}
-
-                  <DropdownMenuItem onClick={() => onDelete(task.id)} className="text-red-600">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }
