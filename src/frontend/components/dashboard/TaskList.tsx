@@ -19,22 +19,18 @@ export function TaskList({ tasks, onEdit, onDelete, onStatusChange }: TaskListPr
       case "high":
         return {
           color: "bg-red-50 text-red-700 border-red-200",
-          dotColor: "bg-red-500",
         }
       case "medium":
         return {
           color: "bg-amber-50 text-amber-700 border-amber-200",
-          dotColor: "bg-amber-500",
         }
       case "low":
         return {
           color: "bg-green-50 text-green-700 border-green-200",
-          dotColor: "bg-green-500",
         }
       default:
         return {
           color: "bg-slate-50 text-slate-700 border-slate-200",
-          dotColor: "bg-slate-500",
         }
     }
   }
@@ -139,7 +135,6 @@ export function TaskList({ tasks, onEdit, onDelete, onStatusChange }: TaskListPr
                         {task.title}
                       </h3>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className={`w-2 h-2 rounded-full ${priorityConfig.dotColor}`} />
                         <Badge variant="outline" className={`${priorityConfig.color} text-xs font-medium px-2 py-1`}>
                           {getPriorityText(task.priority)}
                         </Badge>

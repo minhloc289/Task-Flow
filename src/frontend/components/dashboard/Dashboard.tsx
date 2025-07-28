@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -11,6 +11,7 @@ import { TaskModal } from "./TaskModal"
 import { StatsCards } from "./StatsCards"
 import { CheckSquare, Plus, Search, Bell, LogOut, Menu } from "lucide-react"
 import type { Task, User } from "../../types"
+import { getMyTasks } from "@/frontend/services/taskServices"
 
 interface DashboardProps {
   user: User | null
@@ -18,38 +19,20 @@ interface DashboardProps {
 }
 
 export function Dashboard({ user, onLogout }: DashboardProps) {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Complete Monthly Report",
-      description: "Compile and analyze sales data for December",
-      priority: "high",
-      status: "in-progress",
-      dueDate: "2024-01-15",
-      category: "Work",
-      createdAt: "2024-01-10",
-    },
-    {
-      id: "2",
-      title: "Weekly Team Meeting",
-      description: "Discuss project progress and next week's plan",
-      priority: "medium",
-      status: "todo",
-      dueDate: "2024-01-12",
-      category: "Meeting",
-      createdAt: "2024-01-10",
-    },
-    {
-      id: "3",
-      title: "Review Code Pull Requests",
-      description: "Review and approve pull requests from team members",
-      priority: "high",
-      status: "todo",
-      dueDate: "2024-01-11",
-      category: "Development",
-      createdAt: "2024-01-10",
-    },
-  ])
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const data = await getMyTasks()
+        setTasks(data)
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error)
+      }
+    }
+
+    fetchTasks()
+  }, [])
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
