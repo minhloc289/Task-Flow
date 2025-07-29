@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckSquare, Calendar, Briefcase, Users, Code, AlertCircle, Clock, CheckCircle, X, Filter } from "lucide-react"
+import type { Task } from "../../types"
 
 interface SidebarProps {
+  tasks: Task[]
   selectedCategory: string
   selectedPriority: string
   selectedStatus: string
@@ -15,6 +17,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
+  tasks,
   selectedCategory,
   selectedPriority,
   selectedStatus,
@@ -23,26 +26,42 @@ export function Sidebar({
   onStatusChange,
   onClose,
 }: SidebarProps) {
+
+  const categoryCounts = tasks.reduce<Record<string, number>>((acc, task) => {
+    acc[task.category] = (acc[task.category] || 0) + 1
+    return acc
+  }, {})
+
   const categories = [
-    { id: "all", name: "All Categories", icon: CheckSquare, count: 12 },
-    { id: "Work", name: "Work", icon: Briefcase, count: 5 },
-    { id: "Meeting", name: "Meeting", icon: Users, count: 3 },
-    { id: "Development", name: "Development", icon: Code, count: 2 },
-    { id: "Personal", name: "Personal", icon: Calendar, count: 2 },
+    { id: "all", name: "All Categories", icon: CheckSquare, count: tasks.length },
+    { id: "Work", name: "Work", icon: Briefcase, count: categoryCounts["Work"] || 0 },
+    { id: "Meeting", name: "Meeting", icon: Users, count: categoryCounts["Meeting"] || 0 },
+    { id: "Development", name: "Development", icon: Code, count: categoryCounts["Development"] || 0 },
+    { id: "Personal", name: "Personal", icon: Calendar, count: categoryCounts["Personal"] || 0 },
   ]
+
+  const priorityCounts = tasks.reduce<Record<string, number>>((acc, task) => {
+    acc[task.priority] = (acc[task.priority] || 0) + 1
+    return acc
+  }, {})
 
   const priorities = [
-    { id: "all", name: "All Priorities", color: "bg-slate-500", textColor: "text-slate-700", count: 12 },
-    { id: "high", name: "High Priority", color: "bg-red-500", textColor: "text-red-700", count: 3 },
-    { id: "medium", name: "Medium Priority", color: "bg-yellow-500", textColor: "text-yellow-700", count: 6 },
-    { id: "low", name: "Low Priority", color: "bg-green-500", textColor: "text-green-700", count: 3 },
+    { id: "all", name: "All Priorities", color: "bg-slate-500", textColor: "text-slate-700", count: tasks.length },
+    { id: "high", name: "High Priority", color: "bg-red-500", textColor: "text-red-700", count: priorityCounts["high"] || 0 },
+    { id: "medium", name: "Medium Priority", color: "bg-yellow-500", textColor: "text-yellow-700", count: priorityCounts["medium"] || 0 },
+    { id: "low", name: "Low Priority", color: "bg-green-500", textColor: "text-green-700", count: priorityCounts["low"] || 0 },
   ]
 
+  const statusCounts = tasks.reduce<Record<string, number>>((acc, task) => {
+    acc[task.status] = (acc[task.status] || 0) + 1
+    return acc
+  }, {})
+
   const statuses = [
-    { id: "all", name: "All Status", icon: CheckSquare, count: 12, color: "text-slate-600" },
-    { id: "todo", name: "To Do", icon: Clock, count: 5, color: "text-slate-600" },
-    { id: "in-progress", name: "In Progress", icon: AlertCircle, count: 4, color: "text-blue-600" },
-    { id: "completed", name: "Completed", icon: CheckCircle, count: 3, color: "text-green-600" },
+    { id: "all", name: "All Status", icon: CheckSquare, count: tasks.length, color: "text-slate-600" },
+    { id: "todo", name: "To Do", icon: Clock, count: statusCounts["todo"] || 0, color: "text-slate-600" },
+    { id: "in-progress", name: "In Progress", icon: AlertCircle, count: statusCounts["in-progress"] || 0, color: "text-blue-600" },
+    { id: "completed", name: "Completed", icon: CheckCircle, count: statusCounts["completed"] || 0, color: "text-green-600" },
   ]
 
   return (

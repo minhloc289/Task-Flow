@@ -101,6 +101,7 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
         }`}
       >
         <Sidebar
+          tasks={tasks}
           selectedCategory={selectedCategory}
           selectedPriority={selectedPriority}
           selectedStatus={selectedStatus}
