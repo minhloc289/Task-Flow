@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Task } from "../../types"
+import { createTask } from "../../services/taskServices"
+import { toast } from "react-hot-toast"
 
 interface TaskModalProps {
   isOpen: boolean
@@ -49,10 +51,21 @@ export function TaskModal({ isOpen, onClose, onSubmit, task }: TaskModalProps) {
     }
   }, [task, isOpen])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
-    onClose()
+    try {
+      const createdTask = await createTask(formData)
+
+      onSubmit(createdTask)
+
+      toast.success("Task created successfully!")
+
+      onClose()
+
+    } catch (error) {
+      console.error("Error creating task:", error)
+      toast.error("Failed to create task. Please try again.")
+    }
   }
 
   const handleClose = () => {

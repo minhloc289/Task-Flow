@@ -8,6 +8,7 @@ export interface ITask extends Document {
   dueDate: string
   category: string
   createdAt: string
+  userId: mongoose.Types.ObjectId 
 }
 
 const TaskSchema: Schema = new Schema<ITask>({
@@ -31,7 +32,13 @@ const TaskSchema: Schema = new Schema<ITask>({
     default: () => new Date().toISOString(),
     required: true,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    required: true,
+  }
 })
+
 
 // If the model already exists, return it. Otherwise, create a new one.
 const TaskModel = mongoose.models.Task || mongoose.model<ITask>('Task', TaskSchema)

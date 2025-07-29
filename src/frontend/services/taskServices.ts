@@ -16,3 +16,20 @@ export const getMyTasks = async (): Promise<Task[]> => {
 
   return res.json()
 }
+
+export const createTask = async (task: Omit<Task, "id" | "createdAt">): Promise<Task> => {
+  const res = await fetch(`${API_BASE}/createTask`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify(task),
+  })
+
+  if (!res.ok) {
+    throw new Error("Failed to create task")
+  }
+
+  return await res.json()
+}
