@@ -12,6 +12,11 @@ import { StatsCards } from "./StatsCards"
 import { CheckSquare, Plus, Search, Bell, LogOut, Menu } from "lucide-react"
 import type { Task, User } from "../../types"
 import { getMyTasks } from "@/frontend/services/taskServices"
+import { createTask } from "@/frontend/services/taskServices"
+import { updateTask } from "@/frontend/services/taskServices"
+import { deleteTask} from "@/frontend/services/taskServices"
+import { toast } from "react-hot-toast"
+
 
 interface DashboardProps {
   user: User | null
@@ -53,29 +58,109 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
     return matchesSearch && matchesCategory && matchesPriority && matchesStatus
   })
 
-  const handleAddTask = (taskData: Omit<Task, "id" | "createdAt">) => {
-    const newTask: Task = {
-      ...taskData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split("T")[0],
+  const handleAddTask = async (taskData: Omit<Task, "id" | "createdAt">) => {
+    try {
+      // Create the task on the server
+      const newTask = await createTask(taskData)
+
+      // Add the new task to the state
+      setTasks([...tasks, newTask])
+      setIsTaskModalOpen(false)
+
+      // Show success message
+      toast.success("Task created successfully")
+    } catch (error) {
+      console.error("Failed to create task:", error)
+      toast.error("Failed to create task")
     }
-    setTasks([...tasks, newTask])
   }
 
-  const handleEditTask = (taskData: Omit<Task, "id" | "createdAt">) => {
-    if (editingTask) {
-      setTasks(tasks.map((task) => (task.id === editingTask.id ? { ...task, ...taskData } : task)))
+  const handleEditTask = async (taskData: Omit<Task, "id" | "createdAt">) => {
+    if (!editingTask) return
+
+    // Save the original task state
+    const originalTask = tasks.find((task) => task.id === editingTask.id)
+
+    // Optimistically update UI
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === editingTask.id ? { ...task, ...taskData } : task
+      )
+    )
+
+    try {
+      // Update the task on the server
+      await updateTask(editingTask.id, taskData)
+
+      // Reset editing state
       setEditingTask(null)
+      setIsTaskModalOpen(false)
+
+      // Show success message
+      toast.success("Task updated successfully")
+    } catch (error) {
+      console.error("Failed to update task:", error)
+      toast.error("Failed to update task")
+
+      // Roll back if API call fails
+      if (originalTask) {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === originalTask.id ? originalTask : task
+          )
+        )
+      }
     }
   }
 
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter((task) => task.id !== taskId))
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      // Delete the task on the server
+      await deleteTask(taskId)
+
+      // Remove the task from the state
+      setTasks(tasks.filter((task) => task.id !== taskId))
+
+      // Show success message
+      toast.success("Task deleted successfully")
+    } catch (error) {
+      console.error("Failed to delete task:", error)
+      toast.error("Failed to delete task")
+    }
   }
 
-  const handleStatusChange = (taskId: string, newStatus: Task["status"]) => {
-    setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)))
+  const handleStatusChange = async (taskId: string, newStatus: Task["status"]) => {
+  // Save the original task state
+  const originalTask = tasks.find((task) => task.id === taskId)
+
+  // 2. Optimistically update UI
+  setTasks((prev) =>
+    prev.map((task) =>
+      task.id === taskId ? { ...task, status: newStatus } : task
+    )
+  )
+
+  try {
+    // Call API to update task status
+    await updateTask(taskId, { status: newStatus })
+
+    // Show success message
+    toast.success("Task status updated successfully")
+  } catch (error) {
+    console.error("Failed to update task status:", error)
+    toast.error("Failed to update task status")
+
+    // Rollback if API call fails
+    if (originalTask) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === taskId ? { ...task, status: originalTask.status } : task
+        )
+      )
+    }
   }
+}
+
 
   const openEditModal = (task: Task) => {
     setEditingTask(task)

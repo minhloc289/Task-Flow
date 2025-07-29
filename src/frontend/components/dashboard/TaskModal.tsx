@@ -53,19 +53,8 @@ export function TaskModal({ isOpen, onClose, onSubmit, task }: TaskModalProps) {
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
-    try {
-      const createdTask = await createTask(formData)
-
-      onSubmit(createdTask)
-
-      toast.success("Task created successfully!")
-
-      onClose()
-
-    } catch (error) {
-      console.error("Error creating task:", error)
-      toast.error("Failed to create task. Please try again.")
-    }
+    onSubmit(formData)
+    onClose()
   }
 
   const handleClose = () => {
